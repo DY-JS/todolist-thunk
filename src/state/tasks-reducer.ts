@@ -1,8 +1,6 @@
-import {TasksStateType} from '../app/App';
-import {v1} from 'uuid';
 import {AddTodolistActionType, RemoveTodolistActionType, setTodolistsActionType} from './todolists-reducer';
 import {
-    TaskPriorities,
+   // TaskPriorities,
     TaskStatuses,
     TaskType,
     todolistsAPI,
@@ -11,12 +9,6 @@ import {
 } from '../api/todolists-api'
 import {Dispatch} from "react";
 import {AppRootStateType} from "./store";
-
-// export type SetTasksActionType = {
-//     type: 'SET-TASKS'
-//     tasks: Array<TaskType>
-//     todolistId: string
-// }
 
 const initialState: TasksStateType = {
     /*"todolistId1": [
@@ -35,6 +27,10 @@ const initialState: TasksStateType = {
         { id: "3", title: "tea", status: TaskStatuses.New, todoListId: "todolistId2", description: '',
             startDate: '', deadline: '', addedDate: '', order: 0, priority: TaskPriorities.Low }
     ]*/
+}
+
+export type TasksStateType = {
+    [key: string]: Array<TaskType>
 }
 
 export const tasksReducer = (state: TasksStateType = initialState, action: ActionsType): TasksStateType => {
@@ -93,7 +89,7 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
         case 'ADD-TODOLIST': {
             return {
                 ...state,
-                [action.todolistId]: []
+                [action.todolist.id]: []
             }
         }
         case 'REMOVE-TODOLIST': {
@@ -131,7 +127,7 @@ export const createTaskThunk = (todolistId: string, title: string) => (dispatch:
 
 //для апдейта найдём из стейта (ч-з getState) таску и обновим поля, после чего обновлённую версию отправим на сервер post запросом
 //здесь изм только статус
-export const updateTaskThunk = (todolistId: string, taskId: string, status: TaskStatuses) =>
+export const updateTaskStatusThunk = (todolistId: string, taskId: string, status: TaskStatuses) =>
     (dispatch: Dispatch<ActionsType>, getState: () => AppRootStateType) => {
         const task = getState().tasks[todolistId].find(t => t.id === taskId)
 
@@ -142,7 +138,7 @@ export const updateTaskThunk = (todolistId: string, taskId: string, status: Task
                 deadline: task.deadline,
                 startDate: task.startDate,
                 priority: task.priority,
-                status: task.status,
+                status,                   // !!! заменим status
             }
             todolistsAPI.updateTask(todolistId, taskId, model)  //отдали todolistId, title
                 .then((res) => {
@@ -150,23 +146,6 @@ export const updateTaskThunk = (todolistId: string, taskId: string, status: Task
                 })
         }
     }
-
-//types
-export type RemoveTaskActionType = ReturnType<typeof removeTaskAC>
-export type SetTasksActionType = ReturnType<typeof setTasksAC>
-export type AddTaskActionType = ReturnType<typeof addTaskAC>
-export type ChangeTaskStatusActionType = ReturnType<typeof changeTaskStatusAC>
-export type ChangeTaskTitleActionType = ReturnType<typeof changeTaskTitleAC>
-
-type ActionsType = RemoveTaskActionType
-    | AddTaskActionType
-    | ChangeTaskStatusActionType
-    | setTodolistsActionType //экспортировали из todolist-reducer
-    | SetTasksActionType
-    |setTodolistsActionType
-    |ChangeTaskTitleActionType
-    |AddTodolistActionType
-    | RemoveTodolistActionType
 
 //actioncreators
 export const removeTaskAC = (taskId: string, todolistId: string) => {
@@ -188,3 +167,19 @@ export const changeTaskTitleAC = (taskId: string, title: string, todolistId: str
     return {type: 'CHANGE-TASK-TITLE', title, todolistId, taskId} as const
 }
 
+//types
+export type RemoveTaskActionType = ReturnType<typeof removeTaskAC>
+export type SetTasksActionType = ReturnType<typeof setTasksAC>
+export type AddTaskActionType = ReturnType<typeof addTaskAC>
+export type ChangeTaskStatusActionType = ReturnType<typeof changeTaskStatusAC>
+export type ChangeTaskTitleActionType = ReturnType<typeof changeTaskTitleAC>
+
+type ActionsType = RemoveTaskActionType
+    | AddTaskActionType
+    | ChangeTaskStatusActionType
+    | setTodolistsActionType //экспортировали из todolist-reducer
+    | SetTasksActionType
+    |setTodolistsActionType
+    |ChangeTaskTitleActionType
+    |AddTodolistActionType  //экспортировали из todolist-reducer
+    | RemoveTodolistActionType //экспортировали из todolist-reducer
