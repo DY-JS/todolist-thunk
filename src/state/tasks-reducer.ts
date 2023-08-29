@@ -141,10 +141,9 @@ export const updateTaskStatusThunk = (todolistId: string, taskId: string, proper
             //     priority: task.priority,
             //     status,                   // !!! заменим status
             // }
-            const propertyObj = {status: property}
             const model: UpdateTaskModelType = {
                 ...task,
-                ...propertyObj
+                status: property
             }
             todolistsAPI.updateTask(todolistId, taskId, model)  //отдали todolistId, title
                 .then((res) => {
@@ -152,10 +151,9 @@ export const updateTaskStatusThunk = (todolistId: string, taskId: string, proper
                 })
         }
         if (task && typeof property === 'string') {
-            const propertyObj = {title: property}
             const model: UpdateTaskModelType = {
                 ...task,
-                ...propertyObj
+                title: property
             }
 
             todolistsAPI.updateTask(todolistId, taskId, model)  //отдали todolistId, title
