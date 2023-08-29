@@ -1,6 +1,6 @@
 import {AddTodolistActionType, RemoveTodolistActionType, setTodolistsActionType} from './todolists-reducer';
 import {
-   // TaskPriorities,
+    // TaskPriorities,
     TaskStatuses,
     TaskType,
     todolistsAPI,
@@ -127,27 +127,46 @@ export const createTaskThunk = (todolistId: string, title: string) => (dispatch:
 
 //для апдейта найдём из стейта (ч-з getState) таску и обновим поля, после чего обновлённую версию отправим на сервер post запросом
 //здесь изм только статус
-export const updateTaskStatusThunk = (todolistId: string, taskId: string, status: TaskStatuses) =>
+//export const updateTaskStatusThunk = (todolistId: string, taskId: string, status: TaskStatuses) =>
+export const updateTaskStatusThunk = (todolistId: string, taskId: string, property: TaskStatuses | string) =>
     (dispatch: Dispatch<ActionsType>, getState: () => AppRootStateType) => {
         const task = getState().tasks[todolistId].find(t => t.id === taskId)
 
-        if (task) {
+        if (task && typeof property === 'number') {  //TaskStatuses - enum c номерами
+            // const model: UpdateTaskModelType = {
+            //     title: task.title,
+            //     description: task.description,
+            //     deadline: task.deadline,
+            //     startDate: task.startDate,
+            //     priority: task.priority,
+            //     status,                   // !!! заменим status
+            // }
+            const propertyObj = {status: property}
             const model: UpdateTaskModelType = {
-                title: task.title,
-                description: task.description,
-                deadline: task.deadline,
-                startDate: task.startDate,
-                priority: task.priority,
-                status,                   // !!! заменим status
+                ...task,
+                ...propertyObj
             }
             todolistsAPI.updateTask(todolistId, taskId, model)  //отдали todolistId, title
                 .then((res) => {
-                    dispatch(changeTaskStatusAC(taskId, status, todolistId)) //получили ответ и изменяем UI
+                    dispatch(changeTaskStatusAC(taskId, property, todolistId)) //получили ответ и изменяем UI
                 })
         }
+        if (task && typeof property === 'string') {
+            const propertyObj = {title: property}
+            const model: UpdateTaskModelType = {
+                ...task,
+                ...propertyObj
+            }
+
+            todolistsAPI.updateTask(todolistId, taskId, model)  //отдали todolistId, title
+                .then((res) => {
+                    dispatch(changeTaskTitleAC(taskId, property, todolistId)) //получили ответ и изменяем UI
+                })
+        }
+
     }
 
-//actioncreators
+//Actioncreators
 export const removeTaskAC = (taskId: string, todolistId: string) => {
     return {type: 'REMOVE-TASK', taskId: taskId, todolistId: todolistId} as const
 }
@@ -179,7 +198,7 @@ type ActionsType = RemoveTaskActionType
     | ChangeTaskStatusActionType
     | setTodolistsActionType //экспортировали из todolist-reducer
     | SetTasksActionType
-    |setTodolistsActionType
-    |ChangeTaskTitleActionType
-    |AddTodolistActionType  //экспортировали из todolist-reducer
+    | setTodolistsActionType
+    | ChangeTaskTitleActionType
+    | AddTodolistActionType  //экспортировали из todolist-reducer
     | RemoveTodolistActionType //экспортировали из todolist-reducer

@@ -45,8 +45,8 @@ const Todolists = () => {
     }, []);
 
     const changeTaskTitle = useCallback(function (id: string, newTitle: string, todolistId: string) {
-        const action = changeTaskTitleAC(id, newTitle, todolistId);
-        dispatch(action);
+        //const action = changeTaskTitleAC(id, newTitle, todolistId);
+        dispatch(updateTaskStatusThunk(todolistId, id, newTitle))
     }, []);
 
     const changeFilter = useCallback(function (value: FilterValuesType, todolistId: string) {
